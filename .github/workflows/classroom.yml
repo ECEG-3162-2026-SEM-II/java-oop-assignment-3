@@ -14,26 +14,52 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      # This is where you place your autograding tests
-      # For more information on this runner, see the documentation at: https://github.com/classroom-resources/autograding-io-grader
-      #
-      # For example, you could run a test suite like this:
-      # - name: Run tests
-      #   uses: classroom-resources/autograding-io-grader@v1
-      #     with:
-      #       test-name: Addition Test
-      #       id: addition-test
-      #       command: "./bin/add.sh"
-      #       input: 1 2
-      #       expected-output: 3
-      #       comparison-method: exact
-      #       timeout: 10
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+# --- Test 1: Structural Check ---
+    - name: Structure Test
+      id: structure-test
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: "OOP Structure: Abstraction & Private Fields"
+        setup-command: "mvn compile"
+        command: "mvn test -Dtest=SmartHomeTest#testIsAbstract,SmartHomeTest#testPrivateFields"
+        timeout: 2
+        max-score: 30
+
+    # --- Test 2: Logic Check ---
+    - name: Logic Test
+      id: logic-test
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: "Functionality: Device Activation Logic"
+        setup-command: "mvn compile"
+        command: "mvn test -Dtest=SmartHomeTest#testSmartLightLogic,SmartHomeTest#testSmartThermostatLogic"
+        timeout: 2
+        max-score: 40
+
+    # --- Test 3: Polymorphism Check ---
+    - name: Poly Test
+      id: poly-test
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: "Polymorphism: Master Controller Loop"
+        setup-command: "mvn compile"
+        command: "mvn test -Dtest=SmartHomeTest#testMainUsesPolymorphicList"
+        timeout: 2
+        max-score: 30
+        
+    # --- FINAL REPORTER ---
     - name: Autograding Reporter
       uses: classroom-resources/autograding-grading-reporter@v1
-      # For more information on this runner, see the documentation at https://github.com/classroom-resources/autograding-grading-reporter
-      # To output the results of the tests, you can use the
-      # autograding-grading-reporter action like this:
-      # env:
-      # ADDITION-TEST_RESULTS: "${{ steps.addition - test.outputs.result }}"
-      #     with:
-      #         runners: addition-test
+      env:
+        STRUCTURE-TEST_RESULTS: "${{ steps.structure-test.outputs.result }}"
+        LOGIC-TEST_RESULTS: "${{ steps.logic-test.outputs.result }}"
+        POLY-TEST_RESULTS: "${{ steps.poly-test.outputs.result }}"
+      with:
+        runners: structure-test, logic-test, poly-test
