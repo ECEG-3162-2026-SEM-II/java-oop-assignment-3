@@ -1,11 +1,14 @@
 package com.jju;
-public class SmartLight extends SmartDevice {
-    public SmartLight(String name) {
-        super(name);
+
+public abstract class SmartDevice {
+    private String name;
+
+    public SmartDevice(String name) {
+        this.name = name;
     }
 
-    @Override
-    public void activate() {
-        // TODO: Print "[Name] is now ON at 100% brightness."
-    }
+    public String getName() { return name; }
+
+    // This is the "Contract" - Every device MUST have an activate method
+    public abstract void activate();
 }
